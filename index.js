@@ -20,6 +20,10 @@ function ngExtractTranslations(lang, opt) {
     }
 
     var options = opt || {};
+
+    options.moduleName = options.moduleName || 'Translations';
+    options.deleteInnerText = options.deleteInnerTex || false;
+
     var languages = lang;
     var firstFile = null;
     var extractor = null;
@@ -63,16 +67,16 @@ function ngExtractTranslations(lang, opt) {
 
         _.forEach(languages, function (language) {
 
-            var json = JSON.stringify(extractor.translations);
+            var json = extractor.getTranslations(language, options.moduleName);
             var newFile = new File({
-                path: './translations.' + language + '.json',
+                path: './translations.' + language + '.js',
                 base: "./",
                 contents: new Buffer(json)
             });
             _this.queue(newFile);
         });
 
-        _this.queue(null);      
+        _this.queue(null);
     }
 
     return through(bufferContents, endStream);
@@ -82,17 +86,55 @@ function ngExtractTranslations(lang, opt) {
 var ExtractTranslations = (function () {
     function ExtractTranslations(deleteInnerText) {
         this.translations = {};
-        this.deleteInnerText = deleteInnerText || false;
+        this.deleteInnerText = deleteInnerText;
 
-        this.extract = this.extract.bind(this);
+        this.extract = ExtractTranslations.prototype.extract.bind(this);
+        this.getTranslations = ExtractTranslations.prototype.getTranslations.bind(this);
+    }
+
+    ExtractTranslations.prototype.getTranslations = function (lang, moduleName) {
+        var ret = 'var ' + moduleName + '; (function (' + moduleName + ') {';
+
+        var clone = _.cloneDeep(orderObjectProprtiesAlphabetically(this.translations), function (val) {
+            return _.isString(val) ? (lang + '_' + val) : undefined;
+        });
+
+        ret += 'var ' + lang + ' = ' + JSON.stringify(clone) + ';';
+        ret += moduleName + '.' + lang + ' = ' + lang + '; })(' + moduleName + ' || (' + moduleName + ' = {}));';
+
+        return ret;
+    }
+
+    function orderObjectProprtiesAlphabetically(obj) {
+        var arr = [], i;
+
+        for (i in obj) {
+            if (obj.hasOwnProperty(i)) {
+                arr.push(i);
+            }
+        }
+
+        arr.sort();
+
+        var newobj = {};
+
+        for (i = 0; i < arr.length; i++) {
+            var propName = arr[i];
+            if (_.isObject(obj[propName]))
+                newobj[propName] = orderObjectProprtiesAlphabetically(obj[propName]);
+            else
+                newobj[propName] = obj[propName];
+        }
+
+        return newobj;
     }
 
     ExtractTranslations.prototype.extract = function (file, error) {
         var _this = this;
         //console.log("this: " + JSON.stringify(this));
-        var $ = cheerio.load(file.contents, { decodeEntities: false });
+        var $ = cheerio.load(file.contents, { decodeEntities: false, xmlMode: true });
 
-        $('*').each(function (index, n) {
+        $('*[translate]').each(function (index, n) {
             var node = $(n);
             var attr = node.attr();
             if (attr.hasOwnProperty('translate') && attr.translate) {
@@ -106,7 +148,7 @@ var ExtractTranslations = (function () {
                         if (currentTranslations.hasOwnProperty(ns))
                             error(ns + ' namespace/key is not unique, complete translation key: ' + attr.translate);
                         else
-                            currentTranslations[ns] = attr.translate;
+                            currentTranslations[ns] = node.text() || attr.translate;
                     }
                     else {
                         if (!currentTranslations.hasOwnProperty(ns))

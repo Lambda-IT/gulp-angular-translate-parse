@@ -6,7 +6,13 @@
 <body>
     <div translate="test_key"></div>
     <div translate="ns.test_key"></div>
-    <div translate="ns1.ns2.test_key"></div>
-    <span translate="ns1.ns3.test_key"></span>
+    <button translate="ns1.ns2.test_key">test text</button>
+    <span translate="ns1.ns3.test_key">Here there is already text inside</span>
+
+    <script type="text/ng-template" id="test.html">
+        <div translate="template.test_key"></div>
+        <button translate="template.ns2.test_key">test text</button>
+        <span translate="template.ns3.test_key">Here there is already text inside</span>
+    </script>
 </body>
 </html>

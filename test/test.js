@@ -42,7 +42,7 @@ function testBufferedFile(params, expectedFile, done) {
     stream.pipe(savefile());
 
     stream.on("data", function (newFile) {
-        if (path.extname(newFile.path) == ".json" && newFile.contents) {
+        if (path.extname(newFile.path) == ".js" && newFile.contents) {
             done();
         }
         else

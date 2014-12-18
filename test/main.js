@@ -27,13 +27,13 @@ describe("gulp-angular-translate-parse", function () {
 
         it("should generate the translations file", function (done) {
             var expectedFile = new gutil.File({
-                path: "test/expected/translations.de.json",
+                path: "test/expected/translations.en.js",
                 cwd: "test/",
                 base: "test/expected",
-                contents: fs.readFileSync("test/expected/translations.de.json")
+                contents: fs.readFileSync("test/expected/translations.en.js")
             });
 
-            testBufferedFile(['de', 'en'], expectedFile, done);
+            testBufferedFile(['en'], expectedFile, done);
         });
 
         function testBufferedFile(params, expectedFile, done) {
@@ -48,7 +48,7 @@ describe("gulp-angular-translate-parse", function () {
 
             stream.on("data", function (newFile) {
                 should.exist(newFile);
-                path.extname(newFile.path).should.equal(".json");
+                path.extname(newFile.path).should.equal(".js");
 
                 should.exist(newFile.contents);
                 String(newFile.contents).should.equal(String(expectedFile.contents));
