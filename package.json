@@ -1,0 +1,38 @@
+{
+  "name": "gulp-angular-translate-parse",
+  "version": "1.0.0",
+  "description": "parse for 'translate' attributes",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Lambda-IT/gulp-angular-translate-parse.git"
+  },
+  "keywords": [
+    "angular",
+    "translate",
+    "gulp",
+    "parse"
+  ],
+  "author": "Edi Spring",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Lambda-IT/gulp-angular-translate-parse/issues"
+  },
+  "homepage": "https://github.com/Lambda-IT/gulp-angular-translate-parse",
+  "dependencies": {
+    "cheerio": "^0.18.0",
+    "glob": "^4.3.1",
+    "gulp-util": "^3.0.1",
+    "lodash": "^2.4.1",
+    "through": "^2.3.6"
+  },
+  "devDependencies": {
+    "gulp": "^3.8.10",
+    "gulp-savefile": "^0.1.1",
+    "mocha": "^2.0.1",
+    "should": "^4.4.1"
+  }
+}
