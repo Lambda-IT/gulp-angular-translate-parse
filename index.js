@@ -146,7 +146,7 @@ var ExtractTranslations = (function () {
                 _.forEach(namespaces, function (ns, i) {
                     if (i == max - 1) {
                         if (currentTranslations.hasOwnProperty(ns))
-                            error(ns + ' namespace/key is not unique, complete translation key: ' + attr.translate);
+                            console.log(ns + ' namespace/key is not unique, complete translation key: ' + attr.translate);
                         else
                             currentTranslations[ns] = node.text() || attr.translate;
                     }
