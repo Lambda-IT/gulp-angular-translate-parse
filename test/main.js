@@ -25,7 +25,7 @@ describe("gulp-angular-translate-parse", function () {
             stream.end();
         });
 
-        it("should generate the translations file", function (done) {
+        it("should generate the translations file (no options)", function (done) {
             var expectedFile = new gutil.File({
                 path: "test/expected/translations.en.js",
                 cwd: "test/",
@@ -33,34 +33,56 @@ describe("gulp-angular-translate-parse", function () {
                 contents: fs.readFileSync("test/expected/translations.en.js")
             });
 
-            testBufferedFile(['en'], expectedFile, done);
+            testBufferedFile(['en'], null, expectedFile, done);
+        });
+    });
+
+    describe("when option is provided", function () {
+
+        it("should generate the translations file and not prefix default translation language (option)", function (done) {
+            var expectedFile = new gutil.File({
+                path: "test/expected/translations.de.js",
+                cwd: "test/",
+                base: "test/expected",
+                contents: fs.readFileSync("test/expected/translations.de.js")
+            });
+
+            var options = {
+                defaultLang: 'de',
+                moduleName: 'Translations',
+                deleteInnerText: false
+            };
+
+            testBufferedFile(['de'], options, expectedFile, done);
         });
 
-        function testBufferedFile(params, expectedFile, done) {
-            var srcFile = new gutil.File({
-                path: "test/fixtures/example.html",
-                cwd: "test/",
-                base: "test/fixtures",
-                contents: fs.readFileSync("test/fixtures/example.html")
-            });
-
-            var stream = ngTranslate(params);
-
-            stream.on("data", function (newFile) {
-                should.exist(newFile);
-                path.extname(newFile.path).should.equal(".js");
-
-                should.exist(newFile.contents);
-                String(newFile.contents).should.equal(String(expectedFile.contents));
-
-            });
-
-            stream.on("end", function (data) {
-                done();
-            });
-
-            stream.write(srcFile);
-            stream.end();
-        }
     });
+
+    function testBufferedFile(params, options, expectedFile, done) {
+        var srcFile = new gutil.File({
+            path: "test/fixtures/example.html",
+            cwd: "test/",
+            base: "test/fixtures",
+            contents: fs.readFileSync("test/fixtures/example.html")
+        });
+
+        var stream = ngTranslate(params, options);
+
+        stream.on("data", function (newFile) {
+            should.exist(newFile);
+            path.extname(newFile.path).should.equal(".js");
+
+            should.exist(newFile.contents);
+            String(newFile.contents).should.equal(String(expectedFile.contents));
+
+        });
+
+        stream.on("end", function (data) {
+            done();
+        });
+
+        stream.write(srcFile);
+        stream.end();
+    }
+
 });

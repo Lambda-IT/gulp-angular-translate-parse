@@ -37,7 +37,12 @@ function testBufferedFile(params, expectedFile, done) {
         contents: fs.readFileSync("test/fixtures/example.html")
     });
 
-    var stream = ngTranslate(params);
+    var options = {
+        defaultLang: 'de',
+        moduleName: 'Translations',
+        deleteInnerText: false
+    };
+    var stream = ngTranslate(params, options);
 
     stream.pipe(savefile());
 

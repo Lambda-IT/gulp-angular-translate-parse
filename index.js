@@ -22,7 +22,8 @@ function ngExtractTranslations(lang, opt) {
     var options = opt || {};
 
     options.moduleName = options.moduleName || 'Translations';
-    options.deleteInnerText = options.deleteInnerTex || false;
+    options.deleteInnerText = options.deleteInnerText || false;
+    options.defaultLang = options.defaultLang || '';
 
     var languages = lang;
     var firstFile = null;
@@ -67,7 +68,7 @@ function ngExtractTranslations(lang, opt) {
 
         _.forEach(languages, function (language) {
 
-            var json = extractor.getTranslations(language, options.moduleName);
+            var json = extractor.getTranslations(language, options.moduleName, options.defaultLang);
             var newFile = new File({
                 path: './translations.' + language + '.js',
                 base: "./",
@@ -92,10 +93,13 @@ var ExtractTranslations = (function () {
         this.getTranslations = ExtractTranslations.prototype.getTranslations.bind(this);
     }
 
-    ExtractTranslations.prototype.getTranslations = function (lang, moduleName) {
+    ExtractTranslations.prototype.getTranslations = function (lang, moduleName, defaultLang) {
         var ret = 'var ' + moduleName + '; (function (' + moduleName + ') {';
 
         var clone = _.cloneDeep(orderObjectProprtiesAlphabetically(this.translations), function (val) {
+            if (lang === defaultLang)
+                return _.isString(val) ? val : undefined;
+
             return _.isString(val) ? (lang + '_' + val) : undefined;
         });
 
