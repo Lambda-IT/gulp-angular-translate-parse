@@ -47,7 +47,7 @@ function testBufferedFile(params, expectedFile, done) {
     stream.pipe(savefile());
 
     stream.on("data", function (newFile) {
-        if (path.extname(newFile.path) == ".js" && newFile.contents) {
+        if (path.extname(newFile.path) === ".js" && newFile.contents) {
             done();
         }
         else
@@ -56,6 +56,26 @@ function testBufferedFile(params, expectedFile, done) {
 
     stream.write(srcFile);
     stream.end();
+
+    // remove text in html and return html
+    options.deleteInnerText = true;
+
+    var htmlStream = ngTranslate(params, options);
+
+    //htmlStream.pipe(savefile());
+
+    htmlStream.on("data", function (newFile) {
+        if (path.extname(newFile.path) === ".html" && newFile.contents) {
+            done();
+        }
+        else
+            throw "new file not ok!";
+
+        newFile.path = "test/expected/example.html";
+    });
+
+    htmlStream.write(srcFile);
+    htmlStream.end();
 }
 
 //var expectedFile = new gutil.File({

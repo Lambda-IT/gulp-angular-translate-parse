@@ -56,6 +56,12 @@ function ngExtractTranslations(lang, opt) {
 
         // add file to extractor instance
         extractor.extract(file, function (error) { _this.emit('error', new PluginError(pluginName, error)); });
+
+        // if deleting return modified input file
+        if (options.deleteInnerText) {
+            file.contents = new Buffer(extractor.htmlData);
+            _this.queue(file);
+        }
     }
 
     function endStream() {
@@ -66,16 +72,18 @@ function ngExtractTranslations(lang, opt) {
             return _this.queue(null);
         }
 
-        _.forEach(languages, function (language) {
+        if (!options.deleteInnerText) {
+            _.forEach(languages, function (language) {
 
-            var json = extractor.getTranslations(language, options.moduleName, options.defaultLang);
-            var newFile = new File({
-                path: './translations.' + language + '.js',
-                base: "./",
-                contents: new Buffer(json)
+                var json = extractor.getTranslations(language, options.moduleName, options.defaultLang);
+                var newFile = new File({
+                    path: './translations.' + language + '.js',
+                    base: "./",
+                    contents: new Buffer(json)
+                });
+                _this.queue(newFile);
             });
-            _this.queue(newFile);
-        });
+        }
 
         _this.queue(null);
     }
@@ -142,30 +150,38 @@ var ExtractTranslations = (function () {
             var node = $(n);
             var attr = node.attr();
             if (attr.hasOwnProperty('translate') && attr.translate) {
-                var namespaces = attr.translate.split('.');
-
-                var currentTranslations = _this.translations;
-                var max = namespaces.length;
-
-                _.forEach(namespaces, function (ns, i) {
-                    if (i == max - 1) {
-                        if (currentTranslations.hasOwnProperty(ns))
-                            console.log(ns + ' namespace/key is not unique, complete translation key: ' + attr.translate);
-                        else
-                            currentTranslations[ns] = node.text() || attr.translate;
-                    }
-                    else {
-                        if (!currentTranslations.hasOwnProperty(ns))
-                            currentTranslations[ns] = {};
-                        currentTranslations = currentTranslations[ns];
-                    }
-                });
 
                 if (_this.deleteInnerText && node.text)
                     node.text('');
+                else {
+                    var namespaces = attr.translate.split('.');
 
+                    var currentTranslations = _this.translations;
+                    var max = namespaces.length;
+
+                    _.forEach(namespaces, function (ns, i) {
+                        if (i === max - 1) {
+                            if (currentTranslations.hasOwnProperty(ns)) {
+                                if (typeof currentTranslations[ns] !== "string")
+                                    error(ns + ' namespace/key is used as namespace and key: ' + attr.translate);
+                                else
+                                    console.log(ns + ' namespace/key is not unique, complete translation key: ' + attr.translate);
+                            } else
+                                currentTranslations[ns] = node.text() || attr.translate;
+                        } else {
+                            if (!currentTranslations.hasOwnProperty(ns))
+                                currentTranslations[ns] = {};
+                            else if (typeof currentTranslations[ns] === "string")
+                                error(ns + ' namespace/key is used as namespace and key: ' + attr.translate);
+
+                            currentTranslations = currentTranslations[ns];
+                        }
+                    });
+                }
             }
         });
+
+        _this.htmlData = $.xml();
     };
 
     return ExtractTranslations;

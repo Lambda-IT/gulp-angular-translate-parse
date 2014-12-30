@@ -56,6 +56,59 @@ describe("gulp-angular-translate-parse", function () {
             testBufferedFile(['de'], options, expectedFile, done);
         });
 
+        it("should remove the text from html (deleteInnerText option)", function (done) {
+            var expectedFile = new gutil.File({
+                path: "test/expected/example.html",
+                cwd: "test/",
+                base: "test/expected",
+                contents: fs.readFileSync("test/expected/example.html")
+            });
+
+            var options = {
+                defaultLang: 'de',
+                moduleName: 'Translations',
+                deleteInnerText: true
+            };
+
+            testBufferedFile(['de'], options, expectedFile, done);
+        });
+
+        it("should throw if key is used as namespace first and then as key", function(done) {
+
+            var srcFile = new gutil.File({
+                path: "test/fixtures/key_problem.html",
+                cwd: "test/",
+                base: "test/fixtures",
+                contents: fs.readFileSync("test/fixtures/key_problem.html")
+            });
+
+            var stream = ngTranslate(['de'], null);
+            stream.on("error", function (error) {
+                error.message.should.match(/is used as namespace and key/);
+                done();
+            });
+            stream.write(srcFile);
+            stream.end();
+        });
+
+        it("should throw if namespace is used as key first and then as namespace", function (done) {
+
+            var srcFile = new gutil.File({
+                path: "test/fixtures/ns_problem.html",
+                cwd: "test/",
+                base: "test/fixtures",
+                contents: fs.readFileSync("test/fixtures/ns_problem.html")
+            });
+
+            var stream = ngTranslate(['de'], null);
+            stream.on("error", function (error) {
+                error.message.should.match(/is used as namespace and key/);
+                done();
+            });
+            stream.write(srcFile);
+            stream.end();
+        });
+
     });
 
     function testBufferedFile(params, options, expectedFile, done) {
@@ -68,9 +121,16 @@ describe("gulp-angular-translate-parse", function () {
 
         var stream = ngTranslate(params, options);
 
+        options = options || {};
+        options.deleteInnerText = options.deleteInnerText || false;
+
         stream.on("data", function (newFile) {
             should.exist(newFile);
-            path.extname(newFile.path).should.equal(".js");
+
+            if (options.deleteInnerText)
+                path.extname(newFile.path).should.equal(".html");
+            else
+                path.extname(newFile.path).should.equal(".js");
 
             should.exist(newFile.contents);
             String(newFile.contents).should.equal(String(expectedFile.contents));
