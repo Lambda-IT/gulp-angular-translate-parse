@@ -1,0 +1,33 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+</head>
+<body>
+    <div translate="test_key"></div>
+    <div translate="ns.test_key"></div>
+    <button translate="ns1.ns2.test_key">test text</button>
+    <span translate="ns1.ns3.extra_space">Here  there  is      already    text  inside</span>
+
+    <script type="text/ng-template" id="test.html">
+        <div translate="template.all" gulp-ng-translate-preserve-whitespace >Here  there  is      already    text  inside
+        test  text  test  t
+        Here
+        there
+        is
+        already
+        text
+        inside
+         test
+           test
+           test</div>
+          <button translate="template.ns2.tabs">test  text  test  t</button>
+        <span translate="template.ns3.newlines">Here
+        there
+        is
+        already
+        text
+        inside</span>
+    </script>
+</body>
+</html>

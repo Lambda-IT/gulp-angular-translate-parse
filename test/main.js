@@ -35,6 +35,78 @@ describe("gulp-angular-translate-parse", function () {
 
             testBufferedFile(['en'], null, expectedFile, done);
         });
+
+        it("should remove the whitespace from translations", function (done) {
+          var expectedFile = new gutil.File({
+            path: "test/expected/translations.fr.js",
+            cwd: "test/",
+            base: "test/expected",
+            contents: fs.readFileSync("test/expected/translations.fr.js")
+          });
+
+          var srcFile = new gutil.File({
+            path: "test/fixtures/whitespace.html",
+            cwd: "test/",
+            base: "test/fixtures",
+            contents: fs.readFileSync("test/fixtures/whitespace.html")
+          });
+
+          var stream = ngTranslate(['fr'], null);
+          stream.on("data", function (newFile) {
+            should.exist(newFile);
+
+            path.extname(newFile.path).should.equal(".js");
+
+            should.exist(newFile.contents);
+            String(newFile.contents).should.equal(String(expectedFile.contents));
+
+            //fs.writeFile('translations.fr.js', newFile.contents);
+          });
+
+          stream.on("end", function (data) {
+
+            done();
+          });
+
+          stream.write(srcFile);
+          stream.end();
+      });
+
+      it("should not remove the whitespace from translations when 'gulp-ng-translate-preserve-whitespace' attr is set", function (done) {
+        var expectedFile = new gutil.File({
+          path: "test/expected/translations.ar.js",
+          cwd: "test/",
+          base: "test/expected",
+          contents: fs.readFileSync("test/expected/translations.ar.js")
+        });
+
+        var srcFile = new gutil.File({
+          path: "test/fixtures/preserve_whitespace_attr.html",
+          cwd: "test/",
+          base: "test/fixtures",
+          contents: fs.readFileSync("test/fixtures/preserve_whitespace_attr.html")
+        });
+
+        var stream = ngTranslate(['ar'], null);
+        stream.on("data", function (newFile) {
+          should.exist(newFile);
+
+          path.extname(newFile.path).should.equal(".js");
+
+          should.exist(newFile.contents);
+          String(newFile.contents).should.equal(String(expectedFile.contents));
+
+          // fs.writeFile('translations.ar.js', newFile.contents);
+        });
+
+        stream.on("end", function (data) {
+
+          done();
+        });
+
+        stream.write(srcFile);
+        stream.end();
+      });
     });
 
     describe("when option is provided", function () {
@@ -56,7 +128,7 @@ describe("gulp-angular-translate-parse", function () {
             testBufferedFile(['de'], options, expectedFile, done);
         });
 
-        it("should remove the text from html (deleteInnerText option)", function (done) {
+        it("should remove the text from html and remove 'gulp-ng-translate-preserve-whitespace' attributes (deleteInnerText option)", function (done) {
             var expectedFile = new gutil.File({
                 path: "test/expected/example.html",
                 cwd: "test/",
