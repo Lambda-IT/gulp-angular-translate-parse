@@ -154,10 +154,14 @@ var ExtractTranslations = (function() {
       xmlMode: true
     });
 
-    $('*[translate]').each(function(index, n) {
+    $('*[translate],*[translate-html]').each(function(index, n) {
       var node = $(n);
       var attr = node.attr();
-      if (attr.hasOwnProperty('translate') && attr.translate) {
+      if ((attr.hasOwnProperty('translate') && attr.translate)||(attr.hasOwnProperty('translate-html') && attr['translate-html'])) {
+
+        var keyHtml = attr['translate-html'];
+        var keyText = attr['translate'];
+        var translateKey = keyText || keyHtml;
 
         if (_this.deleteInnerText && node.text){
           node.text('');
@@ -165,7 +169,7 @@ var ExtractTranslations = (function() {
             node.removeAttr('gulp-ng-translate-preserve-whitespace');
         }
         else {
-          var nodeText = node.text();
+          var nodeText = keyHtml ? node.html() : node.text();
           var extraWhitespaceRegEx = /(\t|[\s\r\t]+\n|\n[\s\r\t]+)/g;
 
           if (!_this.preserveWhitespace) {
@@ -177,7 +181,7 @@ var ExtractTranslations = (function() {
             }
           }
 
-          var namespaces = attr.translate.split('.');
+          var namespaces = translateKey.split('.');
 
           var currentTranslations = _this.translations;
           var max = namespaces.length;
@@ -186,16 +190,16 @@ var ExtractTranslations = (function() {
             if (i === max - 1) {
               if (currentTranslations.hasOwnProperty(ns)) {
                 if (typeof currentTranslations[ns] !== "string")
-                  error(ns + ' namespace/key is used as namespace and key: ' + attr.translate);
+                  error(ns + ' namespace/key is used as namespace and key: ' + translateKey);
                 else
-                  console.log(ns + ' namespace/key is not unique, complete translation key: ' + attr.translate);
+                  console.log(ns + ' namespace/key is not unique, complete translation key: ' + translateKey);
               } else
-                currentTranslations[ns] = nodeText || attr.translate;
+                currentTranslations[ns] = nodeText || translateKey;
             } else {
               if (!currentTranslations.hasOwnProperty(ns))
                 currentTranslations[ns] = {};
               else if (typeof currentTranslations[ns] === "string")
-                error(ns + ' namespace/key is used as namespace and key: ' + attr.translate);
+                error(ns + ' namespace/key is used as namespace and key: ' + translateKey);
 
               currentTranslations = currentTranslations[ns];
             }

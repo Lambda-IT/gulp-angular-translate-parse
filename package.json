@@ -1,6 +1,6 @@
 {
   "name": "gulp-angular-translate-parse",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "parse for 'translate' attributes",
   "main": "index.js",
   "scripts": {
